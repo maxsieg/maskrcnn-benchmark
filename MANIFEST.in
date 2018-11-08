@@ -1,1 +1,1 @@
-include maskrcnn_benchmark/maskrcnn_benchmark/csrc
+recursive-include csrc *
