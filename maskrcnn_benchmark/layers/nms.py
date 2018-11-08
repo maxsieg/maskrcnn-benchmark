@@ -5,10 +5,6 @@ import os
 import glob
 
 ext_dir = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'csrc')))
-print(ext_dir)
-print(os.path.dirname(__file__))
-print(os.path.join(os.path.dirname(__file__), '..', 'csrc'))
-print(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'csrc')))
 main_file = glob.glob(os.path.join(ext_dir, "*.cpp"))
 source_cpu = glob.glob(os.path.join(ext_dir, "cpu", "*.cpp"))
 source_cuda = glob.glob(os.path.join(ext_dir, "cuda", "*.cu"))
