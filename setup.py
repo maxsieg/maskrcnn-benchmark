@@ -55,7 +55,6 @@ def get_extensions():
 
     return ext_modules
 
-
 setup(
     name="maskrcnn_benchmark",
     version="0.1",
@@ -63,6 +62,8 @@ setup(
     url="https://github.com/facebookresearch/maskrnn-benchmark",
     description="object detection in pytorch",
     packages=find_packages(exclude=("configs", "tests",)),
+    package_data={'', ['csrc/*']},
+    include_package_data=True,
     # install_requires=requirements,
     ext_modules=get_extensions(),
     cmdclass={"build_ext": torch.utils.cpp_extension.BuildExtension},
