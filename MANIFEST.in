@@ -1,1 +1,1 @@
-include maskrcnn_benchmark.csrc/*
+include maskrcnn_benchmark/csrc
