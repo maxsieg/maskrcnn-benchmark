@@ -184,6 +184,6 @@ class Masker(object):
 
 
 def make_roi_mask_post_processor(cfg):
-    masker = None
+    masker = Masker()
     mask_post_processor = MaskPostProcessor(masker)
     return mask_post_processor
