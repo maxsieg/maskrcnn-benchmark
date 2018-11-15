@@ -89,22 +89,8 @@ class RPNPostProcessor(torch.nn.Module):
         num_anchors = A * H * W
 
         pre_nms_top_n = min(self.pre_nms_top_n, num_anchors)
-        print("inference debugging")
-        print(objectness.max())
-        print(objectness.min())
-        print(torch.isnan(objectness).sum())
-        print(objectness)
         objectness, topk_idx = objectness.topk(pre_nms_top_n, dim=1, sorted=True)
-        print(objectness)
         batch_idx = torch.arange(N, device=device)[:, None]
-        print(objectness.shape) # 4 x 2000
-        print(self.pre_nms_top_n) # 2000
-        print(pre_nms_top_n) # 2000
-        print(N)
-        print(num_anchors) # n_anchors
-        print(topk_idx) # indices
-        print(batch_idx) #
-        print(box_regression.size())
         box_regression = box_regression[batch_idx, topk_idx]
 
         image_shapes = [box.size for box in anchors]
