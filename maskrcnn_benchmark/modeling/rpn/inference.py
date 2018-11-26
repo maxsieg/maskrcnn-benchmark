@@ -83,6 +83,9 @@ class RPNPostProcessor(torch.nn.Module):
         # put in the same format as anchors
         objectness = objectness.permute(0, 2, 3, 1).reshape(N, -1)
         objectness = objectness.sigmoid()
+        assert torch.isnan(objectness).sum() == 0, "Detected nans in the rpn." \
+            + " This is usually caused by setting the learning rate too high, try" \
+            + " decreasing it."
         box_regression = box_regression.view(N, -1, 4, H, W).permute(0, 3, 4, 1, 2)
         box_regression = box_regression.reshape(N, -1, 4)
 

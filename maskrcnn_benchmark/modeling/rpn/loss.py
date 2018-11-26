@@ -51,6 +51,10 @@ class RPNLossComputation(object):
         labels = []
         regression_targets = []
         for anchors_per_image, targets_per_image in zip(anchors, targets):
+            # This could be updated to do something else, but
+            # for now we just assert instead of letting the code break on
+            # line 66.
+            assert len(targets_per_image) > 0, "Images must have at least one target bbox."
             matched_targets = self.match_targets_to_anchors(
                 anchors_per_image, targets_per_image
             )
