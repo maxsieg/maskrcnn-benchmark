@@ -2,7 +2,23 @@ import torch
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
-from maskrcnn_benchmark import _C
+from torch.utils.cpp_extension import load
+import os
+import glob
+
+ext_dir = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'csrc')))
+main_file = glob.glob(os.path.join(ext_dir, "*.cpp"))
+source_cpu = glob.glob(os.path.join(ext_dir, "cpu", "*.cpp"))
+source_cuda = glob.glob(os.path.join(ext_dir, "cuda", "*.cu"))
+sources = main_file + source_cpu + source_cuda
+cuda_flags = [
+    "-DCUDA_HAS_FP16=1",
+    "-D__CUDA_NO_HALF_OPERATORS__",
+    "-D__CUDA_NO_HALF_CONVERSIONS__",
+    "-D__CUDA_NO_HALF2_OPERATORS__",
+]
+
+C_functions = load("vision", sources, extra_cuda_cflags=cuda_flags, extra_include_paths=[ext_dir], with_cuda=True)
 
 
 class DeformRoIPoolingFunction(Function):
@@ -38,19 +54,19 @@ class DeformRoIPoolingFunction(Function):
         n = rois.shape[0]
         output = data.new_empty(n, out_channels, out_size, out_size)
         output_count = data.new_empty(n, out_channels, out_size, out_size)
-        _C.deform_psroi_pooling_forward(
-            data, 
-            rois, 
-            offset, 
-            output, 
-            output_count, 
+        C_functions.deform_psroi_pooling_forward(
+            data,
+            rois,
+            offset,
+            output,
+            output_count,
             ctx.no_trans,
-            ctx.spatial_scale, 
-            ctx.out_channels, 
-            ctx.group_size, 
+            ctx.spatial_scale,
+            ctx.out_channels,
+            ctx.group_size,
             ctx.out_size,
-            ctx.part_size, 
-            ctx.sample_per_part, 
+            ctx.part_size,
+            ctx.sample_per_part,
             ctx.trans_std
         )
 
@@ -72,20 +88,20 @@ class DeformRoIPoolingFunction(Function):
         grad_rois = None
         grad_offset = torch.zeros_like(offset)
 
-        _C.deform_psroi_pooling_backward(
-            grad_output, 
-            data, 
-            rois, 
-            offset, 
-            output_count, 
+        C_functions.deform_psroi_pooling_backward(
+            grad_output,
+            data,
+            rois,
+            offset,
+            output_count,
             grad_input,
-            grad_offset, 
-            ctx.no_trans, 
-            ctx.spatial_scale, 
+            grad_offset,
+            ctx.no_trans,
+            ctx.spatial_scale,
             ctx.out_channels,
-            ctx.group_size, 
-            ctx.out_size, 
-            ctx.part_size, 
+            ctx.group_size,
+            ctx.out_size,
+            ctx.part_size,
             ctx.sample_per_part,
             ctx.trans_std
         )
