@@ -6,6 +6,8 @@ from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
 from torch.utils.cpp_extension import load
+from apex import amp
+
 import os
 import glob
 
@@ -22,9 +24,6 @@ cuda_flags = [
 ]
 
 C_functions = load("vision", sources, extra_cuda_cflags=cuda_flags, extra_include_paths=[ext_dir], with_cuda=True)
-
-
-from apex import amp
 
 class _ROIPool(Function):
     @staticmethod

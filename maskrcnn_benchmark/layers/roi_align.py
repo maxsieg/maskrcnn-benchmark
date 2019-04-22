@@ -8,6 +8,7 @@ from torch.nn.modules.utils import _pair
 from torch.utils.cpp_extension import load
 import os
 import glob
+from apex import amp
 
 ext_dir = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'csrc')))
 main_file = glob.glob(os.path.join(ext_dir, "*.cpp"))
@@ -22,8 +23,6 @@ cuda_flags = [
 ]
 
 C_functions = load("vision", sources, extra_cuda_cflags=cuda_flags, extra_include_paths=[ext_dir], with_cuda=True)
-
-from apex import amp
 
 class _ROIAlign(Function):
     @staticmethod

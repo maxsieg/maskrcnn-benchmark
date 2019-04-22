@@ -3,7 +3,24 @@ from torch import nn
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
-from maskrcnn_benchmark import _C
+
+from torch.utils.cpp_extension import load
+import os
+import glob
+
+ext_dir = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'csrc')))
+main_file = glob.glob(os.path.join(ext_dir, "*.cpp"))
+source_cpu = glob.glob(os.path.join(ext_dir, "cpu", "*.cpp"))
+source_cuda = glob.glob(os.path.join(ext_dir, "cuda", "*.cu"))
+sources = main_file + source_cpu  + source_cuda
+cuda_flags = [
+    "-DCUDA_HAS_FP16=1",
+    "-D__CUDA_NO_HALF_OPERATORS__",
+    "-D__CUDA_NO_HALF_CONVERSIONS__",
+    "-D__CUDA_NO_HALF2_OPERATORS__",
+]
+
+C_functions = load("vision", sources, extra_cuda_cflags=cuda_flags, extra_include_paths=[ext_dir], with_cuda=True)
 
 # TODO: Use JIT to replace CUDA implementation in the future.
 class _SigmoidFocalLoss(Function):
@@ -15,7 +32,7 @@ class _SigmoidFocalLoss(Function):
         ctx.gamma = gamma
         ctx.alpha = alpha
 
-        losses = _C.sigmoid_focalloss_forward(
+        losses = C_functions.sigmoid_focalloss_forward(
             logits, targets, num_classes, gamma, alpha
         )
         return losses
@@ -28,7 +45,7 @@ class _SigmoidFocalLoss(Function):
         gamma = ctx.gamma
         alpha = ctx.alpha
         d_loss = d_loss.contiguous()
-        d_logits = _C.sigmoid_focalloss_backward(
+        d_logits = C_functions.sigmoid_focalloss_backward(
             logits, targets, d_loss, num_classes, gamma, alpha
         )
         return d_logits, None, None, None, None
