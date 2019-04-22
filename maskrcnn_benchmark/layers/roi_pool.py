@@ -24,6 +24,7 @@ cuda_flags = [
 C_functions = load("vision", sources, extra_cuda_cflags=cuda_flags, extra_include_paths=[ext_dir], with_cuda=True)
 
 
+from apex import amp
 
 class _ROIPool(Function):
     @staticmethod
@@ -69,6 +70,7 @@ class ROIPool(nn.Module):
         self.output_size = output_size
         self.spatial_scale = spatial_scale
 
+    @amp.float_function
     def forward(self, input, rois):
         return roi_pool(input, rois, self.output_size, self.spatial_scale)
 

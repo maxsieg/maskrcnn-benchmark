@@ -23,6 +23,7 @@ cuda_flags = [
 
 C_functions = load("vision", sources, extra_cuda_cflags=cuda_flags, extra_include_paths=[ext_dir], with_cuda=True)
 
+from apex import amp
 
 class _ROIAlign(Function):
     @staticmethod
@@ -62,7 +63,6 @@ class _ROIAlign(Function):
 
 roi_align = _ROIAlign.apply
 
-
 class ROIAlign(nn.Module):
     def __init__(self, output_size, spatial_scale, sampling_ratio):
         super(ROIAlign, self).__init__()
@@ -70,6 +70,7 @@ class ROIAlign(nn.Module):
         self.spatial_scale = spatial_scale
         self.sampling_ratio = sampling_ratio
 
+    @amp.float_function
     def forward(self, input, rois):
         return roi_align(
             input, rois, self.output_size, self.spatial_scale, self.sampling_ratio

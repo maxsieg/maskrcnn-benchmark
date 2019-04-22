@@ -28,7 +28,7 @@ def get_extensions():
     extra_compile_args = {"cxx": []}
     define_macros = []
 
-    if torch.cuda.is_available() and CUDA_HOME is not None:
+    if (torch.cuda.is_available() and CUDA_HOME is not None) or os.getenv("FORCE_CUDA", "0") == "1":
         extension = CUDAExtension
         sources += source_cuda
         define_macros += [("WITH_CUDA", None)]
@@ -59,7 +59,7 @@ setup(
     name="maskrcnn_benchmark",
     version="0.1",
     author="fmassa",
-    url="https://github.com/facebookresearch/maskrnn-benchmark",
+    url="https://github.com/facebookresearch/maskrcnn-benchmark",
     description="object detection in pytorch",
     packages=find_packages(exclude=("configs", "tests",)),
     package_data={'maskrcnn_benchmark': ['csrc/*', 'csrc/cpu/*', 'csrc/cuda/*']},

@@ -1,6 +1,7 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 # from ._utils import _C
 from torch.utils.cpp_extension import load
+from apex import amp
 import os
 import glob
 
@@ -18,7 +19,8 @@ cuda_flags = [
 
 C_functions = load("vision", sources, extra_cuda_cflags=cuda_flags, extra_include_paths=[ext_dir], with_cuda=True)
 
+# Only valid with fp32 inputs - give AMP the hint
+nms = amp.float_function(C_functions.nms)
 
-nms = C_functions.nms
 # nms.__doc__ = """
 # This function performs Non-maximum suppresion"""
