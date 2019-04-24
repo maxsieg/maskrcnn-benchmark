@@ -288,11 +288,11 @@ class Bottleneck(nn.Module):
             deformable_groups = dcn_config.get("deformable_groups", 1)
             with_modulated_dcn = dcn_config.get("with_modulated_dcn", False)
             self.conv2 = DFConv2d(
-                bottleneck_channels, 
-                bottleneck_channels, 
-                with_modulated_dcn=with_modulated_dcn, 
-                kernel_size=3, 
-                stride=stride_3x3, 
+                bottleneck_channels,
+                bottleneck_channels,
+                with_modulated_dcn=with_modulated_dcn,
+                kernel_size=3,
+                stride=stride_3x3,
                 groups=num_groups,
                 dilation=dilation,
                 deformable_groups=deformable_groups,
@@ -349,9 +349,10 @@ class BaseStem(nn.Module):
         super(BaseStem, self).__init__()
 
         out_channels = cfg.MODEL.RESNETS.STEM_OUT_CHANNELS
+        in_channels = cfg.MODEL.RESNETS.STEM_IN_CHANNELS
 
         self.conv1 = Conv2d(
-            3, out_channels, kernel_size=7, stride=2, padding=3, bias=False
+            in_channels, out_channels, kernel_size=7, stride=2, padding=3, bias=False
         )
         self.bn1 = norm_func(out_channels)
 
