@@ -6,6 +6,8 @@ import torch
 
 from maskrcnn_benchmark.utils.imports import import_file
 
+INPUT_LAYER_NAME = 'backbone.body.stem.conv1.weight'
+
 
 def align_and_update_state_dicts(model_state_dict, loaded_state_dict):
     """
@@ -46,7 +48,14 @@ def align_and_update_state_dicts(model_state_dict, loaded_state_dict):
             continue
         key = current_keys[idx_new]
         key_old = loaded_keys[idx_old]
-        model_state_dict[key] = loaded_state_dict[key_old]
+        # Handle copying the input weight
+        if key == INPUT_LAYER_NAME:
+            new_weight = model_state_dict[key]
+            loaded_weight = loaded_state_dict[key_old]
+            new_weight[:, :3] = loaded_weight
+            model_state_dict[key] = new_weight
+        else:
+            model_state_dict[key] = loaded_state_dict[key_old]
         logger.info(
             log_str_template.format(
                 key,
