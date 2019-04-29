@@ -9,6 +9,17 @@ from maskrcnn_benchmark.utils.imports import import_file
 INPUT_LAYER_NAME = 'backbone.body.stem.conv1.weight'
 
 
+def remove_mismatched_weights(new_state_dict, old_state_dict):
+    for k, old_weight in old_state_dict.items():
+        new_weight = new_state_dict[k]
+        if old_weight.size() != new_weight.size():
+            log_str_template = "Removing {} from state dict. Old size was {}, loaded size was {}"
+            log_str_template.format(k, old_weight.size(), new_weight.size())
+            del new_state_dict[k]
+    return new_state_dict
+
+
+
 def align_and_update_state_dicts(model_state_dict, loaded_state_dict):
     """
     Strategy: suppose that the models that we will create will have prefixes appended
@@ -84,6 +95,7 @@ def load_state_dict(model, loaded_state_dict):
     # remove the "module" prefix before performing the matching
     loaded_state_dict = strip_prefix_if_present(loaded_state_dict, prefix="module.")
     align_and_update_state_dicts(model_state_dict, loaded_state_dict)
-
+    original_state_dict = model.state_dict()
+    model_state_dict = remove_mismatched_weights(model_state_dict, original_state_dict)
     # use strict loading
     model.load_state_dict(model_state_dict)
