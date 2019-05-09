@@ -62,6 +62,7 @@ setup(
     url="https://github.com/facebookresearch/maskrcnn-benchmark",
     description="object detection in pytorch",
     packages=find_packages(exclude=("configs", "tests",)),
-    package_data={'maskrcnn_benchmark': ['csrc/*', 'csrc/cpu/*', 'csrc/cuda/*']},
     # install_requires=requirements,
+    ext_modules=get_extensions(),
+    cmdclass={"build_ext": torch.utils.cpp_extension.BuildExtension},
 )
