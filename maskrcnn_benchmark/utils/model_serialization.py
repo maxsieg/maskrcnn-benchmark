@@ -63,7 +63,6 @@ def align_and_update_state_dicts(model_state_dict, loaded_state_dict):
             new_weight = model_state_dict[key]
             loaded_weight = loaded_state_dict[key_old]
             new_weight[:, :3] = loaded_weight
-            model_state_dict[key] = new_weight
         else:
             model_state_dict[key] = loaded_state_dict[key_old]
         logger.info(

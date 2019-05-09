@@ -3,23 +3,7 @@ from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 from torch.nn.modules.utils import _pair
 
-from torch.utils.cpp_extension import load
-import os
-import glob
-
-ext_dir = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..', 'csrc')))
-main_file = glob.glob(os.path.join(ext_dir, "*.cpp"))
-source_cpu = glob.glob(os.path.join(ext_dir, "cpu", "*.cpp"))
-source_cuda = glob.glob(os.path.join(ext_dir, "cuda", "*.cu"))
-sources = main_file + source_cpu + source_cuda
-cuda_flags = [
-    "-DCUDA_HAS_FP16=1",
-    "-D__CUDA_NO_HALF_OPERATORS__",
-    "-D__CUDA_NO_HALF_CONVERSIONS__",
-    "-D__CUDA_NO_HALF2_OPERATORS__",
-]
-
-C_functions = load("vision", sources, extra_cuda_cflags=cuda_flags, extra_include_paths=[ext_dir], with_cuda=True)
+from maskrcnn_benchmark import _C
 
 
 class DeformConvFunction(Function):
@@ -62,7 +46,7 @@ class DeformConvFunction(Function):
             cur_im2col_step = min(ctx.im2col_step, input.shape[0])
             assert (input.shape[0] %
                     cur_im2col_step) == 0, 'im2col step must divide batchsize'
-            C_functions.deform_conv_forward(
+            _C.deform_conv_forward(
                 input,
                 weight,
                 offset,
@@ -100,7 +84,7 @@ class DeformConvFunction(Function):
             if ctx.needs_input_grad[0] or ctx.needs_input_grad[1]:
                 grad_input = torch.zeros_like(input)
                 grad_offset = torch.zeros_like(offset)
-                C_functions.deform_conv_backward_input(
+                _C.deform_conv_backward_input(
                     input,
                     offset,
                     grad_output,
@@ -123,7 +107,7 @@ class DeformConvFunction(Function):
 
             if ctx.needs_input_grad[2]:
                 grad_weight = torch.zeros_like(weight)
-                C_functions.deform_conv_backward_parameters(
+                _C.deform_conv_backward_parameters(
                     input,
                     offset,
                     grad_output,
@@ -195,7 +179,7 @@ class ModulatedDeformConvFunction(Function):
         output = input.new_empty(
             ModulatedDeformConvFunction._infer_shape(ctx, input, weight))
         ctx._bufs = [input.new_empty(0), input.new_empty(0)]
-        C_functions.modulated_deform_conv_forward(
+        _C.modulated_deform_conv_forward(
             input,
             weight,
             bias,
@@ -229,7 +213,7 @@ class ModulatedDeformConvFunction(Function):
         grad_mask = torch.zeros_like(mask)
         grad_weight = torch.zeros_like(weight)
         grad_bias = torch.zeros_like(bias)
-        C_functions.modulated_deform_conv_backward(
+        _C.modulated_deform_conv_backward(
             input,
             weight,
             bias,
